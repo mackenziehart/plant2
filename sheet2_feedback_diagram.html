@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Self-Watering Plant — Information Flow Diagram</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
+
+  :root {
+    --cream: #F5F0E8;
+    --ink: #1A1208;
+    --rule: #C8BBA8;
+    --node-stock: #6B4E35;
+    --node-sensor: #E8B84B;
+    --node-comparator: #2D5016;
+    --node-actuator: #1B6FA8;
+    --node-disturbance: #C0392B;
+    --node-goal: #6A3A8A;
+    --arrow-main: #1A1208;
+    --arrow-feedback: #1B6FA8;
+    --arrow-disturbance: #C0392B;
+    --highlight: #E8B84B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 17in;
+    height: 11in;
+    background: var(--cream);
+    font-family: 'DM Mono', monospace;
+    overflow: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--rule) 1px, transparent 1px),
+      linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+    background-size: 0.5in 0.5in;
+    opacity: 0.2;
+  }
+
+  .page {
+    width: 100%;
+    height: 100%;
+    padding: 0.4in 0.5in 0.3in;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 0.1in;
+    margin-bottom: 0.2in;
+  }
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36pt;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+  .header-sub {
+    font-size: 8.5pt;
+    color: var(--ink);
+    opacity: 0.55;
+    text-align: right;
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+  }
+  .header-tag {
+    font-size: 7pt;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink);
+    opacity: 0.4;
+    margin-bottom: 2px;
+  }
+
+  .diagram-area {
+    flex: 1;
+    position: relative;
+  }
+
+  .diagram-area svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Legend + mapping table at bottom */
+  .footer {
+    margin-top: 0.1in;
+    border-top: 1.5px solid var(--ink);
+    padding-top: 0.1in;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.3in;
+    align-items: start;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.1in 0.2in;
+    align-items: center;
+  }
+  .legend-title {
+    width: 100%;
+    font-size: 7pt;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.45;
+    margin-bottom: 2px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 7.5pt;
+    opacity: 0.75;
+  }
+  .legend-line {
+    width: 22px;
+    height: 0;
+    border-top: 2.5px solid currentColor;
+  }
+  .legend-line.dashed {
+    border-top-style: dashed;
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .mapping-table {
+    font-size: 7pt;
+  }
+  .mapping-title {
+    font-size: 7pt;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.45;
+    margin-bottom: 5px;
+  }
+  table { border-collapse: collapse; width: 100%; }
+  th, td {
+    padding: 3px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--rule);
+    font-size: 7pt;
+    opacity: 0.8;
+  }
+  th {
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    font-size: 6.5pt;
+  }
+  td:first-child { font-weight: 500; opacity: 0.9; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="header-tag">Sheet 2 of 2 · Information Flow</div>
+      <div class="header-title">Feedback Loop Diagram</div>
+    </div>
+    <div class="header-sub">
+      Systems Design · Feedback Systems<br>
+      California College of the Arts
+    </div>
+  </div>
+
+  <div class="diagram-area">
+    <svg viewBox="0 0 1440 560" xmlns="http://www.w3.org/2000/svg" font-family="'DM Mono', monospace">
+      <defs>
+        <!-- Arrow markers -->
+        <marker id="arrowMain" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#1A1208"/>
+        </marker>
+        <marker id="arrowFeedback" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#1B6FA8"/>
+        </marker>
+        <marker id="arrowDisturbance" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#C0392B"/>
+        </marker>
+        <marker id="arrowGoal" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#6A3A8A"/>
+        </marker>
+        <!-- Glow for stock node -->
+        <filter id="nodeGlow">
+          <feGaussianBlur stdDeviation="6" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <!-- Subtle shadow for nodes -->
+        <filter id="nodeShadow">
+          <feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.12"/>
+        </filter>
+        <!-- Gradient fills for nodes -->
+        <linearGradient id="stockGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#8B6A4A"/>
+          <stop offset="100%" stop-color="#5A3E28"/>
+        </linearGradient>
+        <linearGradient id="sensorGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#F0C860"/>
+          <stop offset="100%" stop-color="#C09030"/>
+        </linearGradient>
+        <linearGradient id="compGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#3A6820"/>
+          <stop offset="100%" stop-color="#1E3A10"/>
+        </linearGradient>
+        <linearGradient id="actuatorGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2A8ACE"/>
+          <stop offset="100%" stop-color="#0E4878"/>
+        </linearGradient>
+        <linearGradient id="disturbGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#D9534F"/>
+          <stop offset="100%" stop-color="#8E1B18"/>
+        </linearGradient>
+        <linearGradient id="goalGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#9A5ABE"/>
+          <stop offset="100%" stop-color="#4A2070"/>
+        </linearGradient>
+      </defs>
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- BACKGROUND LOOP TRACK (visual guide)        -->
+      <!-- ─────────────────────────────────────────── -->
+      <rect x="100" y="80" width="1240" height="340" rx="30" fill="none" stroke="#C8BBA8" stroke-width="1" stroke-dasharray="8,6" opacity="0.5"/>
+
+      <!-- Loop label -->
+      <text x="720" y="470" text-anchor="middle" font-size="9" fill="#1A1208" letter-spacing="0.15em" opacity="0.35" font-weight="500">NEGATIVE FEEDBACK LOOP</text>
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- NODE POSITIONS:                             -->
+      <!--   STOCK (center-ish):        x=720, y=250  -->
+      <!--   SENSOR:                    x=1100, y=250 -->
+      <!--   COMPARATOR:               x=1100, y=420 -->  
+      <!--   ACTUATOR:                  x=340, y=420  -->
+      <!--   DISTURBANCES:              x=720, y=110  -->
+      <!--   GOAL (setpoint):           x=340, y=250  -->
+      <!-- ─────────────────────────────────────────── -->
+
+      <!-- ══ STOCK NODE ══ -->
+      <g filter="url(#nodeGlow)">
+        <rect x="580" y="185" width="280" height="130" rx="12" fill="url(#stockGrad)" stroke="#8B6A4A" stroke-width="2" filter="url(#nodeShadow)"/>
+      </g>
+      <!-- Highlight line -->
+      <rect x="582" y="187" width="276" height="3" rx="2" fill="white" opacity="0.15"/>
+      <text x="720" y="235" text-anchor="middle" font-size="9" fill="#F5E8D0" letter-spacing="0.18em" opacity="0.8">STOCK</text>
+      <text x="720" y="258" text-anchor="middle" font-size="18" fill="white" font-weight="bold" font-family="'DM Serif Display', serif">Soil Moisture</text>
+      <text x="720" y="278" text-anchor="middle" font-size="10" fill="#D4B88A" letter-spacing="0.05em">Current level (% saturation)</text>
+      <text x="720" y="298" text-anchor="middle" font-size="9" fill="#A87840" letter-spacing="0.05em">e.g. "42%" right now</text>
+      <!-- Stock icon: water drops -->
+      <text x="720" y="315" text-anchor="middle" font-size="13" fill="#4EA8DE" opacity="0.7">💧</text>
+
+      <!-- ══ GOAL / SETPOINT NODE ══ -->
+      <rect x="140" y="185" width="280" height="130" rx="12" fill="url(#goalGrad)" stroke="#9A5ABE" stroke-width="2" filter="url(#nodeShadow)"/>
+      <rect x="142" y="187" width="276" height="3" rx="2" fill="white" opacity="0.15"/>
+      <text x="280" y="230" text-anchor="middle" font-size="9" fill="#E0C8F8" letter-spacing="0.18em" opacity="0.8">GOAL / SETPOINT</text>
+      <text x="280" y="254" text-anchor="middle" font-size="18" fill="white" font-family="'DM Serif Display', serif">60 – 75%</text>
+      <text x="280" y="274" text-anchor="middle" font-size="10" fill="#C8A8F0" letter-spacing="0.03em">Target moisture range</text>
+      <text x="280" y="292" text-anchor="middle" font-size="9" fill="#A070D0">programmed into controller</text>
+
+      <!-- ══ SENSOR NODE ══ -->
+      <rect x="960" y="185" width="280" height="130" rx="12" fill="url(#sensorGrad)" stroke="#C09030" stroke-width="2" filter="url(#nodeShadow)"/>
+      <rect x="962" y="187" width="276" height="3" rx="2" fill="white" opacity="0.2"/>
+      <text x="1100" y="230" text-anchor="middle" font-size="9" fill="#3A2A00" letter-spacing="0.18em" opacity="0.7">SENSOR</text>
+      <text x="1100" y="255" text-anchor="middle" font-size="18" fill="#1A1208" font-family="'DM Serif Display', serif">Moisture Probe</text>
+      <text x="1100" y="275" text-anchor="middle" font-size="10" fill="#5A3A00" letter-spacing="0.03em">Capacitive electrode pair</text>
+      <text x="1100" y="293" text-anchor="middle" font-size="9" fill="#7A5010">reads resistance → voltage</text>
+      <!-- Sensor icon -->
+      <text x="1100" y="310" text-anchor="middle" font-size="11">⚡</text>
+
+      <!-- ══ COMPARATOR NODE ══ -->
+      <rect x="960" y="370" width="280" height="130" rx="12" fill="url(#compGrad)" stroke="#4A8A2A" stroke-width="2" filter="url(#nodeShadow)"/>
+      <rect x="962" y="372" width="276" height="3" rx="2" fill="white" opacity="0.12"/>
+      <text x="1100" y="415" text-anchor="middle" font-size="9" fill="#A0D870" letter-spacing="0.18em" opacity="0.8">COMPARATOR</text>
+      <text x="1100" y="440" text-anchor="middle" font-size="18" fill="white" font-family="'DM Serif Display', serif">Microcontroller</text>
+      <text x="1100" y="460" text-anchor="middle" font-size="10" fill="#80C040" letter-spacing="0.03em">Compares current vs. goal</text>
+      <!-- Error signal representation -->
+      <text x="1100" y="480" text-anchor="middle" font-size="9" fill="#60A020">if moisture &lt; 60% → pump ON</text>
+      <text x="1100" y="493" text-anchor="middle" font-size="9" fill="#60A020">if moisture ≥ 60% → pump OFF</text>
+
+      <!-- ══ ACTUATOR NODE ══ -->
+      <rect x="200" y="370" width="280" height="130" rx="12" fill="url(#actuatorGrad)" stroke="#2A8ACE" stroke-width="2" filter="url(#nodeShadow)"/>
+      <rect x="202" y="372" width="276" height="3" rx="2" fill="white" opacity="0.15"/>
+      <text x="340" y="415" text-anchor="middle" font-size="9" fill="#A0D8F8" letter-spacing="0.18em" opacity="0.8">ACTUATOR</text>
+      <text x="340" y="440" text-anchor="middle" font-size="18" fill="white" font-family="'DM Serif Display', serif">Pump + Drip Emitter</text>
+      <text x="340" y="460" text-anchor="middle" font-size="10" fill="#80C8F8" letter-spacing="0.03em">Adds water to soil</text>
+      <text x="340" y="480" text-anchor="middle" font-size="9" fill="#60A8D8">draws from reservoir tank</text>
+      <text x="340" y="493" text-anchor="middle" font-size="9" fill="#60A8D8">→ drip emitter above soil</text>
+
+      <!-- ══ DISTURBANCES NODE ══ -->
+      <rect x="580" y="30" width="280" height="110" rx="12" fill="url(#disturbGrad)" stroke="#D9534F" stroke-width="2" filter="url(#nodeShadow)"/>
+      <rect x="582" y="32" width="276" height="3" rx="2" fill="white" opacity="0.15"/>
+      <text x="720" y="72" text-anchor="middle" font-size="9" fill="#FFB0AE" letter-spacing="0.18em" opacity="0.8">DISTURBANCES</text>
+      <text x="720" y="94" text-anchor="middle" font-size="15" fill="white" font-family="'DM Serif Display', serif">Environmental Forces</text>
+      <text x="720" y="112" text-anchor="middle" font-size="9" fill="#FFB0AE">heat · sunlight · rain · soil type · plant size</text>
+      <text x="720" y="127" text-anchor="middle" font-size="9" fill="#FF8880">knock moisture out of equilibrium</text>
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- ARROWS                                       -->
+      <!-- ─────────────────────────────────────────── -->
+
+      <!-- 1. GOAL → COMPARATOR (setpoint enters comparator) -->
+      <!-- down from goal to comparator level, then right -->
+      <path d="M420 250 Q490 250 490 435 L958 435" 
+            stroke="#6A3A8A" stroke-width="2.5" fill="none" stroke-dasharray="none"
+            marker-end="url(#arrowGoal)"/>
+      <text x="490" y="320" font-size="8.5" fill="#6A3A8A" letter-spacing="0.05em" transform="rotate(-90,490,320)">setpoint (60–75%)</text>
+
+      <!-- 2. STOCK → SENSOR (plant state is read) -->
+      <path d="M860 250 L958 250" stroke="#1A1208" stroke-width="2.5" fill="none"
+            marker-end="url(#arrowMain)"/>
+      <text x="895" y="243" font-size="8.5" fill="#1A1208" letter-spacing="0.04em">measured</text>
+
+      <!-- 3. SENSOR → COMPARATOR (signal flows down) -->
+      <path d="M1100 315 L1100 368" stroke="#1A1208" stroke-width="2.5" fill="none"
+            marker-end="url(#arrowMain)"/>
+      <text x="1108" y="348" font-size="8.5" fill="#1A1208" letter-spacing="0.04em">analog signal</text>
+
+      <!-- 4. COMPARATOR → ACTUATOR (control signal: pump on/off) -->
+      <path d="M958 435 L482 435" stroke="#1B6FA8" stroke-width="2.5" fill="none"
+            marker-end="url(#arrowFeedback)"/>
+      <!-- Label on arrow -->
+      <rect x="615" y="420" width="165" height="20" rx="4" fill="#E8F4FF" stroke="#4EA8DE" stroke-width="0.8"/>
+      <text x="698" y="433" text-anchor="middle" font-size="8.5" fill="#0E4878" letter-spacing="0.04em">pump ON / OFF command</text>
+
+      <!-- 5. ACTUATOR → STOCK (water added to soil) -->
+      <path d="M340 370 Q340 300 340 260 L578 250" stroke="#1B6FA8" stroke-width="2.5" fill="none"
+            marker-end="url(#arrowFeedback)"/>
+      <!-- Label -->
+      <text x="280" y="308" font-size="8.5" fill="#1B6FA8" letter-spacing="0.04em" transform="rotate(-90,280,308)">water added to soil</text>
+
+      <!-- 6. DISTURBANCES → STOCK (arrow down into stock) -->
+      <path d="M720 140 L720 183" stroke="#C0392B" stroke-width="2.5" fill="none"
+            marker-end="url(#arrowDisturbance)"/>
+      <text x="727" y="170" font-size="8.5" fill="#C0392B" letter-spacing="0.04em">evaporation / rain</text>
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- ERROR SIGNAL annotation at comparator        -->
+      <!-- ─────────────────────────────────────────── -->
+      <rect x="1220" y="400" width="185" height="75" rx="6" fill="white" stroke="#C8BBA8" stroke-width="1"/>
+      <text x="1228" y="418" font-size="7" fill="#1A1208" letter-spacing="0.1em" font-weight="500" opacity="0.5">ERROR SIGNAL</text>
+      <text x="1228" y="434" font-size="8.5" fill="#1A1208">error = current − goal</text>
+      <text x="1228" y="450" font-size="8.5" fill="#C0392B">if error &lt; 0: pump ON</text>
+      <text x="1228" y="466" font-size="8.5" fill="#2D5016">if error ≥ 0: pump OFF</text>
+      <line x1="1240" y1="435" x2="1240" y2="435" stroke="transparent"/>
+      <path d="M1220 435 L1205 435" stroke="#C8BBA8" stroke-width="1" stroke-dasharray="3,2"/>
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- EQUILIBRIUM annotation on STOCK              -->
+      <!-- ─────────────────────────────────────────── -->
+      <rect x="586" y="330" width="268" height="32" rx="5" fill="#FFF8E8" stroke="#E8B84B" stroke-width="1"/>
+      <text x="720" y="348" text-anchor="middle" font-size="8" fill="#7A5010" letter-spacing="0.05em">System seeks equilibrium at 60–75%</text>
+      <text x="720" y="360" text-anchor="middle" font-size="7.5" fill="#A07030" letter-spacing="0.03em">↑ moisture → pump off · ↓ moisture → pump on</text>
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- SHEET 1 MAPPING callouts                     -->
+      <!-- ─────────────────────────────────────────── -->
+      <!-- Small badges showing which sheet-1 part corresponds -->
+      <g opacity="0.7">
+        <!-- STOCK badge -->
+        <circle cx="860" cy="225" r="10" fill="#6B4E35"/>
+        <text x="860" y="229" text-anchor="middle" font-size="8" fill="white" font-weight="500">①</text>
+        <!-- SENSOR badge -->
+        <circle cx="1260" cy="225" r="10" fill="#C09030"/>
+        <text x="1260" y="229" text-anchor="middle" font-size="8" fill="white" font-weight="500">④</text>
+        <!-- COMPARATOR badge -->
+        <circle cx="1260" cy="415" r="10" fill="#2D5016"/>
+        <text x="1260" y="419" text-anchor="middle" font-size="8" fill="white" font-weight="500">⑤</text>
+        <!-- ACTUATOR badge -->
+        <circle cx="155" cy="415" r="10" fill="#1B6FA8"/>
+        <text x="155" y="419" text-anchor="middle" font-size="8" fill="white" font-weight="500">②</text>
+        <!-- DISTURBANCES badge -->
+        <circle cx="870" cy="60" r="10" fill="#C0392B"/>
+        <text x="870" y="64" text-anchor="middle" font-size="8" fill="white" font-weight="500">⑥</text>
+        <!-- GOAL badge -->
+        <circle cx="130" cy="220" r="10" fill="#6A3A8A"/>
+        <text x="130" y="224" text-anchor="middle" font-size="8" fill="white" font-weight="500">—</text>
+      </g>
+
+      <!-- Mapping label -->
+      <text x="1310" y="205" font-size="7.5" fill="#888" letter-spacing="0.1em">① = Sheet 1 part</text>
+
+      <!-- NEGATIVE FEEDBACK label on loop arc -->
+      <path id="loopArc" d="M580 435 Q350 520 340 500 Q220 480 200 435" fill="none"/>
+      <text x="380" y="530" text-anchor="middle" font-size="8" fill="#1B6FA8" letter-spacing="0.08em" opacity="0.6">NEGATIVE FEEDBACK: actuator opposes the error</text>
+    </svg>
+  </div>
+
+  <div class="footer">
+    <div class="legend">
+      <div class="legend-title">Legend</div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#6B4E35"></div>
+        Stock (controlled variable)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#C09030"></div>
+        Sensor
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#2D5016"></div>
+        Comparator
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1B6FA8"></div>
+        Actuator
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#6A3A8A"></div>
+        Goal / Setpoint
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#C0392B"></div>
+        Disturbances
+      </div>
+      <div class="legend-item">
+        <div class="legend-line" style="border-color:#1A1208; width:30px"></div>
+        Information / signal flow
+      </div>
+      <div class="legend-item">
+        <div class="legend-line" style="border-color:#1B6FA8; width:30px"></div>
+        Feedback (control action)
+      </div>
+      <div class="legend-item">
+        <div class="legend-line dashed" style="border-color:#C0392B; width:30px"></div>
+        Disturbance input
+      </div>
+      <div class="legend-item">
+        <div class="legend-line dashed" style="border-color:#6A3A8A; width:30px"></div>
+        Setpoint input
+      </div>
+    </div>
+
+    <div class="mapping-table">
+      <div class="mapping-title">Mapping: Sheet 1 (Physical) ↔ Sheet 2 (Information Flow)</div>
+      <table>
+        <tr><th>Sheet 2 Node</th><th>Sheet 1 Component</th><th>Role</th></tr>
+        <tr><td>Stock</td><td>① Soil in pot</td><td>Main variable kept in equilibrium</td></tr>
+        <tr><td>Sensor</td><td>④ Capacitive moisture probe</td><td>Measures current soil moisture %</td></tr>
+        <tr><td>Comparator</td><td>⑤ Arduino microcontroller</td><td>Compares reading to 60–75% goal</td></tr>
+        <tr><td>Actuator</td><td>② Pump + drip emitter</td><td>Adds water when moisture too low</td></tr>
+        <tr><td>Goal / Setpoint</td><td>⑤ Programmed value in controller</td><td>Defines desired equilibrium range</td></tr>
+        <tr><td>Disturbances</td><td>⑥ Sun, heat, rain, drainage</td><td>Forces that push moisture off target</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>
